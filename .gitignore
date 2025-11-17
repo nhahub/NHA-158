@@ -1,0 +1,36 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+jobs/
+venv/
+env/
+*.venv/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Python packages
+*.egg-info/
+*.egg
+
+# Installed packages
+pip-wheel-metadata/
+
+# PyTorch / Hugging Face cache (optional if large)
+cache/
+*.pt
+*.bin
+
+# Local environment files
+.env
+*.env
+
+# Jupyter notebooks checkpoints
+.ipynb_checkpoints/
