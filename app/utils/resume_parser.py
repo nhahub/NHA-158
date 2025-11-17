@@ -1,27 +1,25 @@
 # app/utils/resume_parser.py
 
-from pathlib import Path
 from typing import List, Union
-
 from PyPDF2 import PdfReader
 from transformers import AutoTokenizer, AutoModelForTokenClassification, pipeline
 from dotenv import load_dotenv
 load_dotenv()
 
-# Path to the fine-tuned BERT NER model directory
-NER_MODEL_DIR = Path(__file__).resolve().parent.parent / "models" / "bert_skill_ner_best"
+# Hugging Face model repo
+NER_MODEL_NAME = "hagarrrr/bert_skill_ner_best"  # Replace with your Hugging Face repo
 
 _ner_pipeline = None  # cached pipeline
-
 
 def get_ner_pipeline():
     """
     Lazy-load and cache the NER pipeline so we don't reload it every request.
+    Downloads the model from Hugging Face Hub if not already cached.
     """
     global _ner_pipeline
     if _ner_pipeline is None:
-        tokenizer = AutoTokenizer.from_pretrained(NER_MODEL_DIR)
-        model = AutoModelForTokenClassification.from_pretrained(NER_MODEL_DIR)
+        tokenizer = AutoTokenizer.from_pretrained(NER_MODEL_NAME)
+        model = AutoModelForTokenClassification.from_pretrained(NER_MODEL_NAME)
         _ner_pipeline = pipeline(
             "ner",
             model=model,
@@ -31,23 +29,18 @@ def get_ner_pipeline():
     return _ner_pipeline
 
 
-def extract_text_from_pdf(pdf_source: Union[str, Path, bytes]) -> str:
+def extract_text_from_pdf(pdf_source: Union[str, bytes]) -> str:
     """
     Extract plain text from a PDF file.
     - pdf_source can be a file path or raw bytes.
     """
-    if isinstance(pdf_source, (str, Path)):
-        reader = PdfReader(str(pdf_source))
+    if isinstance(pdf_source, str):
+        reader = PdfReader(pdf_source)
     else:
-        # bytes-like object
         from io import BytesIO
         reader = PdfReader(BytesIO(pdf_source))
 
-    pages_text = []
-    for page in reader.pages:
-        txt = page.extract_text() or ""
-        pages_text.append(txt)
-
+    pages_text = [page.extract_text() or "" for page in reader.pages]
     return "\n".join(pages_text).strip()
 
 
