@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+
+# Venv
+.venv/
+env/
+venv/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Logs
+logs/
+*.log
+
+# Secrets
+.env
+
+# Data / uploads (if any)
+data/
+uploads/
