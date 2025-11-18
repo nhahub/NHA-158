@@ -5,7 +5,9 @@ from typing import List, Dict, Tuple
 from collections import defaultdict
 import gzip
 import json
+import os
 
+import requests
 import faiss
 import numpy as np
 from dotenv import load_dotenv
@@ -18,31 +20,58 @@ COMPRESSED_JOB_INDEX_PATH = DATA_DIR / "job_embeddings.index.gz"
 JOB_INDEX_PATH = DATA_DIR / "job_embeddings.index"
 JOB_META_PATH = DATA_DIR / "job_chunks_metadata.json"
 
+# Where to download the compressed index from IF it's not found locally.
+# You can override this via env var JOB_INDEX_URL if needed.
+DEFAULT_INDEX_URL = os.getenv("JOB_INDEX_URL") or (
+    "https://raw.githubusercontent.com/nhahub/NHA-158/"
+    "job_recommendation/app/data/job_embeddings.index.gz"
+)
+
+
+def download_compressed_index(
+    url: str = DEFAULT_INDEX_URL, dest: Path = COMPRESSED_JOB_INDEX_PATH
+) -> None:
+    """
+    Download the compressed FAISS index (.gz) from a remote URL
+    into app/data/.
+    """
+    dest.parent.mkdir(parents=True, exist_ok=True)
+
+    print(f"[job_matcher] Downloading FAISS index from {url} ...")
+    resp = requests.get(url, stream=True, timeout=600)
+    resp.raise_for_status()
+
+    with open(dest, "wb") as f:
+        for chunk in resp.iter_content(chunk_size=8192):
+            if chunk:
+                f.write(chunk)
+
+    print(f"[job_matcher] Download complete: {dest}")
+
 
 def ensure_index_uncompressed() -> None:
     """
     Make sure JOB_INDEX_PATH exists.
-    If only the .gz exists, decompress it once.
+
+    1. If uncompressed index exists -> do nothing.
+    2. Else if compressed .gz exists -> decompress it.
+    3. Else -> download .gz from GitHub (or JOB_INDEX_URL) then decompress.
     """
-    # If raw index already exists -> nothing to do
+    # 1) Already have uncompressed index
     if JOB_INDEX_PATH.exists():
         return
 
-    # If compressed file exists -> decompress
-    if COMPRESSED_JOB_INDEX_PATH.exists():
-        print(f"[job_matcher] Decompressing {COMPRESSED_JOB_INDEX_PATH.name} ...")
-        with gzip.open(COMPRESSED_JOB_INDEX_PATH, "rb") as f_in, open(
-            JOB_INDEX_PATH, "wb"
-        ) as f_out:
-            f_out.write(f_in.read())
-        print(f"[job_matcher] Decompressed to {JOB_INDEX_PATH.name}")
-        return
+    # 2) If compressed file is missing, download it
+    if not COMPRESSED_JOB_INDEX_PATH.exists():
+        download_compressed_index()
 
-    # Neither file exists
-    raise FileNotFoundError(
-        f"FAISS index not found. Expected either "
-        f"{JOB_INDEX_PATH} or {COMPRESSED_JOB_INDEX_PATH}"
-    )
+    # 3) Decompress .gz -> .index
+    print(f"[job_matcher] Decompressing {COMPRESSED_JOB_INDEX_PATH.name} ...")
+    with gzip.open(COMPRESSED_JOB_INDEX_PATH, "rb") as f_in, open(
+        JOB_INDEX_PATH, "wb"
+    ) as f_out:
+        f_out.write(f_in.read())
+    print(f"[job_matcher] Decompressed to {JOB_INDEX_PATH.name}")
 
 
 def load_job_index(
@@ -51,7 +80,7 @@ def load_job_index(
     """
     Load FAISS index and job chunks metadata.
     """
-    # Ensure the index exists (decompress if needed)
+    # Ensure the index exists (download + decompress if needed)
     ensure_index_uncompressed()
 
     if not index_path.exists():
