@@ -3,16 +3,46 @@
 from pathlib import Path
 from typing import List, Dict, Tuple
 from collections import defaultdict
+import gzip
+import json
 
 import faiss
-import json
 import numpy as np
 from dotenv import load_dotenv
+
 load_dotenv()
 
+# ---- Paths ----
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+COMPRESSED_JOB_INDEX_PATH = DATA_DIR / "job_embeddings.index.gz"
 JOB_INDEX_PATH = DATA_DIR / "job_embeddings.index"
 JOB_META_PATH = DATA_DIR / "job_chunks_metadata.json"
+
+
+def ensure_index_uncompressed() -> None:
+    """
+    Make sure JOB_INDEX_PATH exists.
+    If only the .gz exists, decompress it once.
+    """
+    # If raw index already exists -> nothing to do
+    if JOB_INDEX_PATH.exists():
+        return
+
+    # If compressed file exists -> decompress
+    if COMPRESSED_JOB_INDEX_PATH.exists():
+        print(f"[job_matcher] Decompressing {COMPRESSED_JOB_INDEX_PATH.name} ...")
+        with gzip.open(COMPRESSED_JOB_INDEX_PATH, "rb") as f_in, open(
+            JOB_INDEX_PATH, "wb"
+        ) as f_out:
+            f_out.write(f_in.read())
+        print(f"[job_matcher] Decompressed to {JOB_INDEX_PATH.name}")
+        return
+
+    # Neither file exists
+    raise FileNotFoundError(
+        f"FAISS index not found. Expected either "
+        f"{JOB_INDEX_PATH} or {COMPRESSED_JOB_INDEX_PATH}"
+    )
 
 
 def load_job_index(
@@ -21,6 +51,9 @@ def load_job_index(
     """
     Load FAISS index and job chunks metadata.
     """
+    # Ensure the index exists (decompress if needed)
+    ensure_index_uncompressed()
+
     if not index_path.exists():
         raise FileNotFoundError(f"FAISS index not found: {index_path}")
     if not metadata_path.exists():

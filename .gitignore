@@ -4,6 +4,7 @@ __pycache__/
 *$py.class
 
 # Virtual environments
+job_matching/
 jobs/
 venv/
 env/
@@ -16,21 +17,21 @@ Thumbs.db
 # Logs
 *.log
 
-# Python packages
+# Python packages metadata
 *.egg-info/
 *.egg
-
-# Installed packages
 pip-wheel-metadata/
 
-# PyTorch / Hugging Face cache (optional if large)
+# PyTorch / Hugging Face cache
 cache/
 *.pt
 *.bin
 
-# Local environment files
+# Env file
 .env
-*.env
 
 # Jupyter notebooks checkpoints
 .ipynb_checkpoints/
+
+# Large index files
+job_embeddings.index

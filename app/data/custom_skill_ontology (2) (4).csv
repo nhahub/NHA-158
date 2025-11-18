@@ -65,3 +65,4 @@ s002,Learning,Machine Learning; Supervised Learning; Unsupervised Learning,ML Su
 s003,Models,Machine Learning Models; Statistical Models; Predictive Models,ML Algorithms,"Model Development, Model Deployment, Model Tuning, Ensemble Methods, Neural Networks"
 s004,Power BI,Microsoft Power BI; Power BI Desktop; Power BI Service,BI Tools,"Data Visualization, SQL, DAX, Tableau, Excel"
 s005,Text,Text Analysis; Text Mining; Text Processing,NLP Libraries,"Natural Language Processing, Sentiment Analysis, Tokenization, Stemming, Lemmatization, Regular Expressions"
+s1001,Grounding,Grounding techniques; Model grounding; Contextual grounding,AI Subfields,"Large Language Models, Retrieval Augmented Generation, Knowledge Graphs, Natural Language Understanding, Fact Checking"
