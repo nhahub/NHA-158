@@ -1,0 +1,14 @@
+fastapi==0.104.1
+uvicorn==0.24.0
+python-multipart==0.0.6
+langchain
+langchain-openai
+langchain-groq 
+langchain-community
+langchain-core
+pypdf==3.17.1
+chromadb==0.4.18
+sentence-transformers>=2.2.2
+tiktoken==0.5.2
+pydantic-settings==2.1.0
+streamlit
