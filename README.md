@@ -1,12 +1,3 @@
----
-title: Chatbot Interview Simulation
-emoji: 🐠
-colorFrom: yellow
-colorTo: blue
-sdk: docker
-pinned: false
----
-
 # Chatbot Interview Simulation
 
 This is an interactive chatbot application that simulates job interviews across different professional fields. The application uses a Retrieval-Augmented Generation (RAG) pipeline to provide contextually relevant interview questions and feedback.
